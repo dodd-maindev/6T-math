@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, BookOpen, Users, Star, Target, Brain, Award, Sparkles, Calculator, LineChart } from 'lucide-react';
+import { Brain, Calculator, LineChart } from 'lucide-react';
 
 const FeaturesSection = () => {
   const features = [

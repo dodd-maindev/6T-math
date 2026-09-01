@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, BookOpen, Users, Clock } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -23,9 +23,6 @@ const CourseCard = ({ title, description, color, id }) => {
           backdrop-blur-lg bg-opacity-95 border border-white/30 
           hover:shadow-2xl transition-all duration-300 relative overflow-hidden`}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl" />
-          
           <div className="space-y-6 relative z-10">
             <div className="space-y-4">
               <h3 
@@ -95,7 +92,6 @@ const CourseCard = ({ title, description, color, id }) => {
 
 const CourseCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
   const [visibleCount, setVisibleCount] = useState(getInitialVisibleCount());
   const [containerWidth, setContainerWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -217,14 +213,12 @@ const CourseCarousel = () => {
 
   const nextSlide = () => {
     if (canScrollRight) {
-      setDirection(1);
       setCurrentIndex(prev => Math.min(prev + 1, courses.length - visibleCount));
     }
   };
 
   const prevSlide = () => {
     if (canScrollLeft) {
-      setDirection(-1);
       setCurrentIndex(prev => Math.max(prev - 1, 0));
     }
   };

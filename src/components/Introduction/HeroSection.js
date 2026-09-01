@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Sparkles, Star, BookOpen, Award, Target, Users } from 'lucide-react';
+import { Sparkles, Star, Award, Target, Users } from 'lucide-react';
 
-const HeroSection = ({ scrollToNextSection }) => {
-  const [isVisible, setIsVisible] = useState(false);
+const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   
   const heroContent = [
@@ -25,12 +24,11 @@ const HeroSection = ({ scrollToNextSection }) => {
   ];
 
   useEffect(() => {
-    setIsVisible(true);
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroContent.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroContent.length]);
 
   const statistics = [
     { icon: Users, value: "1000+", label: "Học viên" },

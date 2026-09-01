@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Sparkles, Star, Brain, Award } from 'lucide-react';
-import Introduction from './../../Pages/Introduction';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Banner = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [fade, setFade] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
 
   const images = [
@@ -22,21 +20,12 @@ const Banner = () => {
 
   useEffect(() => {
     setIsVisible(true);
-
     const interval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-        setFade(true);
-      }, 1000);
-    }, 6000); // Tăng lên 6 giây
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [images.length]);
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  // Snowfall component with controlled animation
   const Snowfall = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(50)].map((_, i) => (
@@ -54,20 +43,10 @@ const Banner = () => {
       ))}
       <style jsx>{`
         @keyframes snowfall {
-          0% {
-            transform: translateY(-10px) translateX(0) rotate(0deg);
-            opacity: 0;
-          }
-          10% {
-            opacity: 0.7;
-          }
-          90% {
-            opacity: 0.7;
-          }
-          100% {
-            transform: translateY(100vh) translateX(${Math.random() * 100 - 50}px) rotate(360deg);
-            opacity: 0;
-          }
+          0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.7; }
+          90% { opacity: 0.7; }
+          100% { transform: translateY(100vh) translateX(${Math.random() * 100 - 50}px) rotate(360deg); opacity: 0; }
         }
       `}</style>
     </div>
@@ -75,52 +54,25 @@ const Banner = () => {
 
   return (
     <section className="relative w-full h-screen overflow-hidden">
-      {/* Background Image with enhanced animations */}
       <AnimatePresence mode="wait">
         <motion.div 
           key={currentImageIndex}
           className="absolute inset-0"
           initial={{ scale: 1.5, opacity: 0 }}
-          animate={{ 
-            scale: 1,
-            opacity: 1,
-            transition: {
-              duration: 3,
-              ease: [0.645, 0.045, 0.355, 1]
-            }
-          }}
-          exit={{ 
-            scale: 1.4,
-            opacity: 0,
-            transition: {
-              duration: 2
-            }
-          }}
+          animate={{ scale: 1, opacity: 1, transition: { duration: 3, ease: [0.645, 0.045, 0.355, 1] } }}
+          exit={{ scale: 1.4, opacity: 0, transition: { duration: 2 } }}
         >
-          <img
-            src={images[currentImageIndex]}
-            alt="Banner"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <img src={images[currentImageIndex]} alt="Banner" className="absolute inset-0 w-full h-full object-cover" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-purple-900/50 to-black/70 opacity-80" />
-
-      {/* Snowfall Effect */}
       <Snowfall />
 
-      {/* Content Container */}
       <div className="relative h-full flex flex-col items-center justify-center text-white px-4">
-        {/* Animated Logo */}
         <div className="mb-8 relative">
           <Sparkles className="absolute -top-8 -left-8 w-6 h-6 text-yellow-400 animate-spin-slow" />
-          <h1
-            className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center mb-6 transform transition-all duration-1000 ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-            } scale-95 mt-5  sm:scale-100 lg:scale-110`}
-          >
+          <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center mb-6 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} scale-95 mt-5 sm:scale-100 lg:scale-110`}>
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient">
               6T MATH
             </span>
@@ -128,46 +80,26 @@ const Banner = () => {
           <Sparkles className="absolute -bottom-8 -right-8 w-6 h-6 text-yellow-400 animate-spin-slow delay-500" />
         </div>
 
-        {/* Animated Tagline with improved transitions */}
         <AnimatePresence mode="wait">
-          <motion.p
-            key={quotes[currentImageIndex]}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl md:text-3xl text-center mb-8 font-light"
-          >
+          <motion.p key={quotes[currentImageIndex]} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: 0.5 }} className="text-2xl md:text-3xl text-center mb-8 font-light">
             {quotes[currentImageIndex]}
           </motion.p>
         </AnimatePresence>
 
-        {/* Features */}
         <div className="flex flex-wrap justify-center gap-8 mb-12">
           {[
             { icon: Brain, text: "Phương pháp độc đáo" },
             { icon: Star, text: "Giảng viên chất lượng" },
             { icon: Award, text: "Thành tích xuất sắc" }
           ].map((feature, index) => (
-            <div
-              key={index}
-              className={`flex items-center space-x-2 transform transition-all duration-1000 backdrop-blur-sm bg-white/10 rounded-full px-4 py-2 ${
-                isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-              }`}
-              style={{ transitionDelay: `${600 + index * 200}ms` }}
-            >
+            <div key={index} className={`flex items-center space-x-2 transform transition-all duration-1000 backdrop-blur-sm bg-white/10 rounded-full px-4 py-2 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`} style={{ transitionDelay: `${600 + index * 200}ms` }}>
               <feature.icon className="w-6 h-6 text-blue-400" />
               <span className="text-lg">{feature.text}</span>
             </div>
           ))}
         </div>
 
-        {/* CTA Buttons */}
-        <div
-          className={`flex flex-wrap justify-center gap-4 transform transition-all duration-1000 delay-1000 ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-          }`}
-        >
+        <div className={`flex flex-wrap justify-center gap-4 transform transition-all duration-1000 delay-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
           <a href='/contact'>
             <button className="px-6 py-2 sm:px-8 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full font-semibold hover:shadow-lg hover:shadow-blue-500/50 transform hover:scale-100 sm:hover:scale-105 transition-all duration-300 backdrop-blur-sm">
               Đăng Ký Ngay
@@ -180,7 +112,6 @@ const Banner = () => {
           </a>
         </div>
 
-        {/* Scroll Indicator */}
         <ChevronDown 
           className="hidden sm:block absolute ml-[240px] bottom-8 left-1/3 transform -translate-x-1/2 w-12 h-12 text-white animate-bounce cursor-pointer"
           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
@@ -191,19 +122,3 @@ const Banner = () => {
 };
 
 export default Banner;
-
-// Add these custom animations to your CSS/Tailwind config
-const style = {
-  '.animate-gradient': {
-    backgroundSize: '200% 200%',
-    animation: 'gradient 8s linear infinite'
-  },
-  '.animate-spin-slow': {
-    animation: 'spin 6s linear infinite'
-  },
-  '@keyframes gradient': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' }
-  }
-};

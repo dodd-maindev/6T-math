@@ -54,19 +54,19 @@ const Footer = () => {
               Liên Kết Nhanh
             </h2>
             <div className="grid grid-cols-2 gap-4">
-              <a href="#" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
+              <a href="/" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full" />
                 Trang chủ
               </a>
-              <a href="#" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
+              <a href="/courses" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full" />
                 Khóa học
               </a>
-              <a href="#" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
+              <a href="/Introduction" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full" />
                 Giới thiệu
               </a>
-              <a href="#" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
+              <a href="/contact" className="text-gray-600 hover:text-blue-700 hover:translate-x-2 transition-all duration-300 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full" />
                 Liên hệ
               </a>
@@ -79,7 +79,7 @@ const Footer = () => {
               Kết Nối Với Chúng Tôi
             </h2>
             <div className="space-y-6">
-              <a href="https://www.facebook.com/profile.php?id=100005172408204" className="block">
+              <a href="https://www.facebook.com/profile.php?id=100005172408204" target="_blank" rel="noopener noreferrer" className="block">
                 <div className="relative overflow-hidden rounded-lg group">
                   <img 
                     src="/Screenshot2025-01-10214336.png"
@@ -92,13 +92,13 @@ const Footer = () => {
                 </div>
               </a>
               <div className="flex justify-center space-x-6">
-                <a href="#" className="transform hover:scale-125 transition-transform duration-300 hover:-translate-y-1">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="transform hover:scale-125 transition-transform duration-300 hover:-translate-y-1">
                   <Facebook className="w-8 h-8 text-blue-600" />
                 </a>
-                <a href="#" className="transform hover:scale-125 transition-transform duration-300 hover:-translate-y-1">
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="transform hover:scale-125 transition-transform duration-300 hover:-translate-y-1">
                   <Youtube className="w-8 h-8 text-red-600" />
                 </a>
-                <a href="#" className="transform hover:scale-125 transition-transform duration-300 hover:-translate-y-1">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="transform hover:scale-125 transition-transform duration-300 hover:-translate-y-1">
                   <Instagram className="w-8 h-8 text-pink-600" />
                 </a>
               </div>

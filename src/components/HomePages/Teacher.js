@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
 
 const TeacherShowcase = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

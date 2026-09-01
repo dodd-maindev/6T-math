@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Star, Heart, BookOpen, Users, Award, Sparkles, GraduationCap, Coffee, Clock } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Star, Heart, BookOpen, Users, Sparkles, GraduationCap, Coffee } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 const ManifestationsSection = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
-  
-
   const timeline = [
     {
       year: "2007",
@@ -44,7 +39,6 @@ const ManifestationsSection = () => {
   ];
 
   useEffect(() => {
-    setIsVisible(true);
     AOS.init();
   }, []);
 

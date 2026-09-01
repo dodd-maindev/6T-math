@@ -3,37 +3,46 @@ import { Config } from '../../config/appConfig';
 
 /**
  * Cloudflare Turnstile Bot Protection Widget.
- * Automatically verifies genuine human interaction before submission.
+ * Uses persistent callback refs to prevent React re-render loops.
  */
 export const CloudflareTurnstile = ({ onVerify, onError, onExpire }) => {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
+  const callbacksRef = useRef({ onVerify, onError, onExpire });
 
   useEffect(() => {
-    // Load Cloudflare Turnstile script if not already present
+    callbacksRef.current = { onVerify, onError, onExpire };
+  });
+
+  useEffect(() => {
+    let isMounted = true;
     const scriptId = 'cf-turnstile-script';
-    let script = document.getElementById(scriptId);
 
     const renderWidget = () => {
-      if (window.turnstile && containerRef.current && !widgetIdRef.current) {
+      if (!isMounted || !window.turnstile || !containerRef.current || widgetIdRef.current) return;
+      try {
+        containerRef.current.innerHTML = '';
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: Config.TURNSTILE_SITE_KEY,
           theme: 'light',
+          size: 'normal',
           callback: (token) => {
-            if (onVerify) onVerify(token);
+            if (callbacksRef.current.onVerify) callbacksRef.current.onVerify(token);
           },
           'error-callback': (err) => {
-            if (onError) onError(err);
+            if (callbacksRef.current.onError) callbacksRef.current.onError(err);
           },
           'expired-callback': () => {
-            if (onExpire) onExpire();
+            if (callbacksRef.current.onExpire) callbacksRef.current.onExpire();
           },
         });
+      } catch (e) {
+        console.warn('Turnstile render warning:', e);
       }
     };
 
-    if (!script) {
-      script = document.createElement('script');
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
       script.id = scriptId;
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       script.async = true;
@@ -45,21 +54,22 @@ export const CloudflareTurnstile = ({ onVerify, onError, onExpire }) => {
     }
 
     return () => {
+      isMounted = false;
       if (window.turnstile && widgetIdRef.current) {
         try {
           window.turnstile.remove(widgetIdRef.current);
-          widgetIdRef.current = null;
         } catch (e) {}
+        widgetIdRef.current = null;
       }
     };
-  }, [onVerify, onError, onExpire]);
+  }, []); // Run once on mount
 
   return (
     <div className="flex flex-col items-center justify-center my-2 p-2 bg-slate-50 border border-slate-200 rounded-xl">
       <div className="text-[11px] text-slate-500 font-semibold mb-1">
         🔒 Bảo vệ bởi Cloudflare Turnstile
       </div>
-      <div ref={containerRef} className="cf-turnstile" />
+      <div ref={containerRef} className="min-h-[65px] flex items-center justify-center" />
     </div>
   );
 };

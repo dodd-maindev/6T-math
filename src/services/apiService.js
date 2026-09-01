@@ -5,22 +5,16 @@ export const API_BASE_URL = Config.API_BASE_URL.endsWith('/api') ? Config.API_BA
 
 /**
  * Sends an HTTP request to the backend API.
- * @param {string} path - The relative path of the endpoint.
- * @param {object} options - Fetch options.
- * @returns {Promise<any>} Response JSON data.
  */
 async function apiRequest(path, options = {}) {
   const url = `${API_BASE_URL}${path}`;
   const defaultOptions = {
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     ...options,
   };
 
   const response = await fetch(url, defaultOptions);
-  
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(errorText || `API request failed with status ${response.status}`);
@@ -28,24 +22,17 @@ async function apiRequest(path, options = {}) {
 
   if (response.status === 204 || response.status === 200) {
     const contentLength = response.headers.get('content-length');
-    if (contentLength === '0') {
-      return null;
-    }
+    if (contentLength === '0') return null;
   }
 
-  try {
-    return await response.json();
-  } catch (_) {
-    return null;
-  }
+  try { return await response.json(); } catch (_) { return null; }
 }
 
 export const apiService = {
   get: (path) => apiRequest(path, { method: 'GET' }),
-  post: (path, body) => apiRequest(path, {
-    method: 'POST',
-    body: JSON.stringify(body),
-  }),
+  post: (path, body) => apiRequest(path, { method: 'POST', body: JSON.stringify(body) }),
+  put: (path, body) => apiRequest(path, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (path) => apiRequest(path, { method: 'DELETE' }),
 };
 
 export default apiService;

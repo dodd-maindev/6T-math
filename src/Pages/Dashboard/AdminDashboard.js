@@ -6,19 +6,21 @@ import ClassroomModal from '../../components/Dashboard/ClassroomModal';
 import StudentTab from '../../components/Dashboard/StudentTab';
 import ExamTab from '../../components/Dashboard/ExamTab';
 import GradingTab from '../../components/Dashboard/GradingTab';
-import { School, Plus } from 'lucide-react';
+import { School, Plus, Loader2 } from 'lucide-react';
 
 /**
- * Main dashboard container with responsive layout across all device screens.
+ * Main dashboard container with smooth loading state and responsive layout.
  */
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [currentTab, setCurrentTab] = useState('students');
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassroom, setSelectedClassroom] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isClassroomModalOpen, setIsClassroomModalOpen] = useState(false);
 
   const fetchClassrooms = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await apiService.get('/admin/classroom');
       const list = Array.isArray(data) ? data : [];
@@ -31,6 +33,8 @@ const AdminDashboard = () => {
       }
     } catch (_) {
       setClassrooms([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -58,7 +62,12 @@ const AdminDashboard = () => {
       />
 
       <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto p-3 sm:p-6 overflow-y-auto">
-        {selectedClassroom ? (
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center space-y-3 py-16 text-slate-400">
+            <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <p className="text-xs font-semibold text-slate-500">Đang tải dữ liệu lớp học...</p>
+          </div>
+        ) : selectedClassroom ? (
           <div className="flex-1 flex flex-col w-full">
             {currentTab === 'students' && <StudentTab classroom={selectedClassroom} />}
             {currentTab === 'exams' && <ExamTab classroom={selectedClassroom} />}

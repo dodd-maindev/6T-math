@@ -6,10 +6,11 @@ import StudentModal from './StudentModal';
 import { UserPlus, Search, ChevronRight, GraduationCap, School } from 'lucide-react';
 
 /**
- * Responsive full-width student management table with search, profile view, and edit.
+ * Responsive full-width student management table with skeleton loading, search, and edit.
  */
 export const StudentTab = ({ classroom }) => {
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeStudent, setActiveStudent] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [activeSubmission, setActiveSubmission] = useState(null);
@@ -17,10 +18,11 @@ export const StudentTab = ({ classroom }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchStudents = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await apiService.get(`/admin/classroom/${classroom.id}/students`);
       setStudents(data || []);
-    } catch (_) { setStudents([]); }
+    } catch (_) { setStudents([]); } finally { setLoading(false); }
   }, [classroom.id]);
 
   const fetchSubmissions = useCallback(async (studentId) => {
@@ -66,7 +68,7 @@ export const StudentTab = ({ classroom }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-0">
         <div>
           <h2 className="text-sm sm:text-base font-black text-slate-900">Danh Sách Học Sinh</h2>
-          <p className="text-[11px] sm:text-xs text-slate-500">Lớp: <span className="font-bold text-amber-700">{classroom.name}</span> ({students.length} học sinh)</p>
+          <p className="text-[11px] sm:text-xs text-slate-500">Lớp: <span className="font-bold text-amber-700">{classroom.name}</span> {loading ? '(Đang tải...)' : `(${students.length} học sinh)`}</p>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
@@ -79,7 +81,16 @@ export const StudentTab = ({ classroom }) => {
 
       <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-y-auto flex-1 divide-y divide-slate-100">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="p-4 space-y-3">
+              {[1, 2, 3].map(n => (
+                <div key={n} className="flex items-center space-x-3 p-3 bg-slate-50/70 rounded-xl animate-pulse">
+                  <div className="w-9 h-9 bg-slate-200 rounded-xl shrink-0" />
+                  <div className="space-y-1.5 flex-1"><div className="h-3.5 bg-slate-200 rounded w-1/3" /><div className="h-2.5 bg-slate-200 rounded w-1/4" /></div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-12 sm:py-16 text-slate-400 text-xs flex flex-col items-center justify-center space-y-2"><GraduationCap className="w-8 h-8 text-slate-300" /><p>Chưa tìm thấy học sinh nào</p></div>
           ) : (
             filtered.map((std, idx) => (

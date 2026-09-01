@@ -5,19 +5,21 @@ import ExamModal from './ExamModal';
 import { BookOpen, Plus, Calendar, ChevronRight, FileText, Trash2 } from 'lucide-react';
 
 /**
- * Responsive assignment & exam management grid with creation & deletion.
+ * Responsive assignment & exam management grid with skeleton loading, creation & deletion.
  */
 export const ExamTab = ({ classroom }) => {
   const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeAssignment, setActiveAssignment] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchAssignments = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await apiService.get(`/admin/classroom/${classroom.id}/assignments`);
       setAssignments(data || []);
-    } catch (_) { setAssignments([]); }
+    } catch (_) { setAssignments([]); } finally { setLoading(false); }
   }, [classroom.id]);
 
   const fetchQuestions = useCallback(async (assId) => {
@@ -60,13 +62,23 @@ export const ExamTab = ({ classroom }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-0">
         <div>
           <h2 className="text-sm sm:text-base font-black text-slate-900">Quản Lý Đề Thi & BTVN</h2>
-          <p className="text-[11px] sm:text-xs text-slate-500">Lớp: <span className="font-bold text-amber-700">{classroom.name}</span> ({assignments.length} đề thi)</p>
+          <p className="text-[11px] sm:text-xs text-slate-500">Lớp: <span className="font-bold text-amber-700">{classroom.name}</span> {loading ? '(Đang tải...)' : `(${assignments.length} đề thi)`}</p>
         </div>
         <button onClick={() => setIsModalOpen(true)} className="px-3 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center space-x-1.5 self-start sm:self-auto"><Plus className="w-4 h-4" /><span>+ Tạo đề thi mới</span></button>
       </div>
 
       <div className="flex-1 overflow-y-auto pr-1">
-        {assignments.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {[1, 2, 3].map(n => (
+              <div key={n} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 animate-pulse">
+                <div className="w-8 h-8 bg-slate-200 rounded-xl" />
+                <div className="h-4 bg-slate-200 rounded w-2/3" />
+                <div className="h-3 bg-slate-100 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : assignments.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 sm:p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-3">
             <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-slate-300" />
             <p className="text-xs text-slate-400">Lớp chưa có đề thi nào. Bấm nút phía trên để tạo đề đầu tiên!</p>

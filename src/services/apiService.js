@@ -1,6 +1,7 @@
-const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-export const API_HOST = process.env.REACT_APP_API_URL || `http://${host}:8000`;
-export const API_BASE_URL = `${API_HOST}/api`;
+import { Config } from '../config/appConfig';
+
+export const API_HOST = Config.API_BASE_URL.replace(/\/api$/, '');
+export const API_BASE_URL = Config.API_BASE_URL.endsWith('/api') ? Config.API_BASE_URL : `${Config.API_BASE_URL}/api`;
 
 /**
  * Sends an HTTP request to the backend API.

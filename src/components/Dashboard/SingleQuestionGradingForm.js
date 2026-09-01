@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../../services/apiService';
 import { Sparkles, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import CloudflareTurnstile from '../Security/CloudflareTurnstile';
 
 const formatScore = (val) => {
   const num = parseFloat(val || 0);
@@ -8,10 +9,11 @@ const formatScore = (val) => {
 };
 
 /**
- * Form component for grading a single specific question with images.
+ * Form component for grading a single specific question with Turnstile bot verification.
  */
 export const SingleQuestionGradingForm = ({ assignment, student, questions = [], selectedQuestion, onQuestionChange, onGradingComplete, onError }) => {
   const [studentFiles, setStudentFiles] = useState([]);
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -22,6 +24,7 @@ export const SingleQuestionGradingForm = ({ assignment, student, questions = [],
     const form = new FormData();
     form.append('student_id', student.id);
     form.append('assignment_id', assignment.id);
+    if (turnstileToken) form.append('cf_turnstile_response', turnstileToken);
     Array.from(studentFiles).forEach(f => form.append('image', f));
     if (selectedQuestion) form.append('question_number', selectedQuestion);
 
@@ -79,6 +82,8 @@ export const SingleQuestionGradingForm = ({ assignment, student, questions = [],
           onChange={(e) => setStudentFiles(e.target.files)}
         />
       </div>
+
+      <CloudflareTurnstile onVerify={(token) => setTurnstileToken(token)} />
 
       <button
         type="submit"

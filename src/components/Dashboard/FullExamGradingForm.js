@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../../services/apiService';
 import { FileText, Sparkles, AlertCircle, Layers } from 'lucide-react';
+import CloudflareTurnstile from '../Security/CloudflareTurnstile';
 
 /**
- * Form component for full-exam automated grading via a single PDF or multiple images.
+ * Form component for full-exam automated grading with Turnstile bot protection.
  */
 export const FullExamGradingForm = ({ assignment, student, questions = [], onGradingComplete, onError }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -17,6 +19,7 @@ export const FullExamGradingForm = ({ assignment, student, questions = [], onGra
     const form = new FormData();
     form.append('student_id', student.id);
     form.append('assignment_id', assignment.id);
+    if (turnstileToken) form.append('cf_turnstile_response', turnstileToken);
     Array.from(selectedFiles).forEach(f => form.append('pdf', f));
 
     try {
@@ -68,6 +71,8 @@ export const FullExamGradingForm = ({ assignment, student, questions = [], onGra
           onChange={(e) => setSelectedFiles(e.target.files)}
         />
       </div>
+
+      <CloudflareTurnstile onVerify={(token) => setTurnstileToken(token)} />
 
       <button
         type="submit"

@@ -11,11 +11,31 @@ const formatScore = (val) => {
 /**
  * Form component for grading a single specific question with Turnstile bot verification.
  */
-export const SingleQuestionGradingForm = ({ assignment, student, questions = [], selectedQuestion, onQuestionChange, onGradingComplete, onError }) => {
+export const SingleQuestionGradingForm = ({
+  assignment,
+  student,
+  questions = [],
+  selectedQuestion: propSelectedQuestion,
+  onQuestionChange,
+  onGradingComplete,
+  onError,
+}) => {
+  const [internalSelectedQuestion, setInternalSelectedQuestion] = useState(
+    propSelectedQuestion || (questions[0]?.question_number ? questions[0].question_number.toString() : '1')
+  );
   const [studentFiles, setStudentFiles] = useState([]);
   const [turnstileToken, setTurnstileToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const currentSelectedQuestion = propSelectedQuestion !== undefined ? propSelectedQuestion : internalSelectedQuestion;
+
+  const handleQuestionSelect = (val) => {
+    setInternalSelectedQuestion(val);
+    if (typeof onQuestionChange === 'function') {
+      onQuestionChange(val);
+    }
+  };
 
   const handleSingleGrade = async (e) => {
     e.preventDefault();
@@ -26,7 +46,7 @@ export const SingleQuestionGradingForm = ({ assignment, student, questions = [],
     form.append('assignment_id', assignment.id);
     if (turnstileToken) form.append('cf_turnstile_response', turnstileToken);
     Array.from(studentFiles).forEach(f => form.append('image', f));
-    if (selectedQuestion) form.append('question_number', selectedQuestion);
+    if (currentSelectedQuestion) form.append('question_number', currentSelectedQuestion);
 
     try {
       const res = await fetch(`${API_BASE_URL}/admin/student/submission`, { method: 'POST', body: form, credentials: 'include' });
@@ -57,8 +77,8 @@ export const SingleQuestionGradingForm = ({ assignment, student, questions = [],
         <label className="block text-slate-700 font-bold mb-1">Chọn câu hỏi cần chấm:</label>
         <select
           className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-amber-500 text-xs shadow-sm"
-          value={selectedQuestion}
-          onChange={(e) => onQuestionChange(e.target.value)}
+          value={currentSelectedQuestion}
+          onChange={(e) => handleQuestionSelect(e.target.value)}
         >
           {questions.map((q) => (
             <option key={q.id} value={q.question_number}>

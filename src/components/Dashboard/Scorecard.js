@@ -34,7 +34,8 @@ export const Scorecard = ({ submission, studentName, onClose }) => {
   const feedback = submission.feedback || {};
   const isAggregated = !!submission.isAggregated;
   const questions = isAggregated ? (feedback.questions || []) : groupQuestions(feedback.questions || []);
-  const scoreNum = parseFloat(submission.score || 0);
+  const rawScore = parseFloat(submission.score || 0);
+  const scoreNum = isAggregated ? (Math.round(rawScore * 4) / 4) : rawScore;
   const questionTotalMax = questions.reduce((sum, q) => sum + (q.max_score || 0), 0);
   const totalMax = isAggregated ? 10.0 : (questionTotalMax || 2.5);
   const ratio = totalMax > 0 ? scoreNum / totalMax : 0;

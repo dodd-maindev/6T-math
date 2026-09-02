@@ -74,13 +74,13 @@ export const buildAggregatedSubmission = (assignment, history = [], officialQues
   }
 
   const finalQuestions = targets.filter(oq => result.has(oq.question_number)).map(oq => result.get(oq.question_number));
-  const allImages = finalQuestions.flatMap(q => q.imageUrls || []);
-  const totalScore = finalQuestions.reduce((s, q) => s + (parseFloat(q.allocated_score) || 0), 0);
+  const rawTotal = finalQuestions.reduce((s, q) => s + (parseFloat(q.allocated_score) || 0), 0);
+  const roundedTotal = Math.round(rawTotal * 4) / 4;
 
   return {
     id: 'aggregated', assignment_id: assignment.id,
     assignment_title: `${assignment.title} - TỔNG HỢP KẾT QUẢ`,
-    score: totalScore.toFixed(2), isAggregated: true, totalMaxScore: 10.0,
+    score: roundedTotal.toString(), isAggregated: true, totalMaxScore: 10.0,
     feedback: {
       general_feedback: `Tổng hợp ${finalQuestions.length} câu hỏi đã chấm.`,
       questions: finalQuestions,

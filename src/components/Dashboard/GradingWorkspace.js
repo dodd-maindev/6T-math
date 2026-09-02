@@ -29,8 +29,7 @@ export const GradingWorkspace = ({ classroom, assignment, student, questions, on
 
   useEffect(() => {
     fetchHistory();
-    if (questions.length > 0) setSelectedQuestion(questions[0].question_number.toString());
-  }, [fetchHistory, questions]);
+  }, [fetchHistory]);
 
   const handleFullExamComplete = (newSubmissions) => {
     fetchHistory();

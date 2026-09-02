@@ -2,36 +2,68 @@ import React from 'react';
 import katex from 'katex';
 
 /**
- * Renders LaTeX formulas safely. Returns HTML string.
+ * Safely renders LaTeX formula into HTML using KaTeX.
  */
 const renderKatex = (latex, displayMode = false) => {
   try {
-    return katex.renderToString(latex, { throwOnError: false, displayMode });
+    return katex.renderToString(latex.trim(), { throwOnError: false, displayMode });
   } catch (_) {
     return latex;
   }
 };
 
 /**
- * Normalizes plain mathematical expressions (like x^2, x >= 2) into LaTeX if not enclosed in $.
+ * Preprocesses text by detecting LaTeX delimiters, parenthesized LaTeX, and bare backslash commands.
+ */
+const preprocessMathText = (raw = '') => {
+  if (!raw) return '';
+  let str = String(raw);
+
+  // 1. Convert LaTeX delimiters \( ... \) and \[ ... \]
+  str = str.replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');
+  str = str.replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$');
+
+  // 2. Wrap parenthesized LaTeX expressions: (\widehat{...}) -> ($\widehat{...}$)
+  str = str.replace(/\(([^$()]*?\\[a-zA-Z]+[^$()]*?)\)/g, '($$$1$$)');
+
+  // 3. Scan parts outside $...$ and auto-wrap bare LaTeX commands (\Delta, \frac, \sim, etc.)
+  const parts = str.split(/(\$\$[\s\S]+?\$\$|\$[^$]+?\$)/g);
+  return parts.map(part => {
+    if ((part.startsWith('$') && part.endsWith('$')) || (part.startsWith('$$') && part.endsWith('$$'))) {
+      return part;
+    }
+    return part
+      .replace(/((?:\\[a-zA-Z]+(?:\{[^{}]*\}|\^\{[^{}]*\}|_\{[^{}]*\}|[0-9a-zA-Z^_]+)*|\b[a-zA-Z]\b|\d+)\s*(?:[=+\-*/~<>:]\s*(?:\\[a-zA-Z]+(?:\{[^{}]*\}|\^\{[^{}]*\}|_\{[^{}]*\}|[0-9a-zA-Z^_]+)*|\b[a-zA-Z]\b|\d+)\s*)+)/g, (m) => {
+        return m.includes('\\') ? `$${m.trim()}$` : m;
+      })
+      .replace(/(\\[a-zA-Z]+(?:\{[^{}]*\}|\^\{[^{}]*\}|_\{[^{}]*\}|[0-9a-zA-Z^_]+)*)/g, '$$$1$$');
+  }).join('');
+};
+
+/**
+ * Normalizes and renders math formulas inside strings.
  */
 const normalizeTextToMath = (text = '') => {
-  // If text contains $...$, split by $
-  if (text.includes('$')) {
-    const parts = text.split(/(\$[^$]+\$)/g);
+  const preprocessed = preprocessMathText(text);
+
+  if (preprocessed.includes('$')) {
+    const parts = preprocessed.split(/(\$\$[\s\S]+?\$\$|\$[^$]+?\$)/g);
     return parts.map((part, index) => {
+      if (part.startsWith('$$') && part.endsWith('$$')) {
+        const html = renderKatex(part.slice(2, -2), true);
+        return <span key={index} dangerouslySetInnerHTML={{ __html: html }} className="block my-1 text-center" />;
+      }
       if (part.startsWith('$') && part.endsWith('$')) {
-        const mathContent = part.slice(1, -1);
-        const html = renderKatex(mathContent);
+        const html = renderKatex(part.slice(1, -1), false);
         return <span key={index} dangerouslySetInnerHTML={{ __html: html }} className="inline-block mx-0.5" />;
       }
       return <span key={index}>{part}</span>;
     });
   }
 
-  // Fallback auto-detection for common math patterns (x^2, >=, <=, \sqrt)
-  const mathRegex = /(\b[a-zA-Z]\^[0-9]+|\b[a-zA-Z]\s*(?:>=|<=|>|<|=)\s*[0-9-]+|\b[a-zA-Z]\^[0-9]+\s*[+-]\s*[0-9a-zA-Z]+|\b[a-zA-Z]\^[0-9]+\s*[+-]\s*[a-zA-Z]\s*[+-]\s*[0-9]+\s*=\s*[0-9]+)/g;
-  const tokens = text.split(mathRegex);
+  // Fallback for simple algebraic patterns like x^2, >=, <=
+  const mathRegex = /(\b[a-zA-Z]\^[0-9]+|\b[a-zA-Z]\s*(?:>=|<=|>|<|=)\s*[0-9-]+)/g;
+  const tokens = preprocessed.split(mathRegex);
 
   return tokens.map((token, idx) => {
     if (mathRegex.test(token)) {

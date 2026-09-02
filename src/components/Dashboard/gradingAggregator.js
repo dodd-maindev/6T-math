@@ -74,6 +74,7 @@ export const buildAggregatedSubmission = (assignment, history = [], officialQues
   }
 
   const finalQuestions = targets.filter(oq => result.has(oq.question_number)).map(oq => result.get(oq.question_number));
+  const allImages = finalQuestions.flatMap(q => q.imageUrls || []);
   const rawTotal = finalQuestions.reduce((s, q) => s + (parseFloat(q.allocated_score) || 0), 0);
   const roundedTotal = Math.round(rawTotal * 4) / 4;
 

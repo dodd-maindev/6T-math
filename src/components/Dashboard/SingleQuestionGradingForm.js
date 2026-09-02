@@ -5,7 +5,7 @@ import CloudflareTurnstile from '../Security/CloudflareTurnstile';
 
 const formatScore = (val) => {
   const num = parseFloat(val || 0);
-  return Number.isInteger(num) ? num.toString() : num.toFixed(2).replace(/\.?0+$/, '');
+  return Number.isInteger(num) ? num.toString() : num.toFixed(3).replace(/\.?0+$/, '');
 };
 
 /**

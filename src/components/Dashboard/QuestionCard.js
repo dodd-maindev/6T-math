@@ -22,7 +22,7 @@ const parseStep = (step) => {
   m = raw.match(/^(?:(?:Ý|Câu|Phần)\s*([a-zA-Z])|\(([a-zA-Z])\)|([a-zA-Z])\))\s*[:.)]?\s*(.*)$/i);
   if (m) {
     const cleanBody = (m[4] || '').replace(/^[):.]+\s*/, '').trim();
-    return { groupTitle: null, bullet: `${(m[1] || m[2] || m[3]).toLowerCase()})`, body: cleanBody, ...step };
+    return { groupTitle: `Câu ${(m[1] || m[2] || m[3]).toLowerCase()}:`, bullet: null, body: cleanBody, ...step };
   }
   return { groupTitle: null, bullet: null, body: raw, ...step };
 };

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apiService } from '../../services/apiService';
+import { apiService, API_BASE_URL } from '../../services/apiService';
 import Scorecard from './Scorecard';
 import { buildAggregatedSubmission } from './gradingAggregator';
 import FullExamGradingForm from './FullExamGradingForm';
-import SingleQuestionGradingForm from './SingleQuestionGradingForm';
-import { ArrowLeft, History, Calendar, Award, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, History, Calendar, Award, FileText, Upload, Sparkles, Loader2 } from 'lucide-react';
 
 const formatScore = (val) => {
   const num = parseFloat(val || 0);
@@ -12,13 +11,14 @@ const formatScore = (val) => {
 };
 
 /**
- * Grading workspace supporting both full exam PDF parallel grading and single question grading.
+ * Grading workspace with two modes: grade from uploaded images or full PDF.
  */
 export const GradingWorkspace = ({ classroom, assignment, student, questions, onBack }) => {
-  const [gradingMode, setGradingMode] = useState('full');
-  const [selectedQuestion, setSelectedQuestion] = useState(questions[0]?.question_number?.toString() || '1');
+  const [gradingMode, setGradingMode] = useState('uploads');
   const [submissionResult, setSubmissionResult] = useState(null);
   const [history, setHistory] = useState([]);
+  const [uploads, setUploads] = useState([]);
+  const [grading, setGrading] = useState(false);
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -27,19 +27,42 @@ export const GradingWorkspace = ({ classroom, assignment, student, questions, on
     } catch (_) { setHistory([]); }
   }, [student.id, assignment.id]);
 
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+  const fetchUploads = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/assignment/${assignment.id}/upload-summary`, { credentials: 'include' });
+      if (!res.ok) return;
+      const all = await res.json();
+      const studentInfo = all.find(s => s.student_id === student.id);
+      if (!studentInfo || studentInfo.uploaded_count === 0) { setUploads([]); return; }
+      const detailRes = await fetch(`${API_BASE_URL}/student/uploads/${assignment.id}`, { credentials: 'include' });
+      // For admin viewing student uploads, we query directly
+    } catch (_) {}
+  }, [assignment.id, student.id]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  const handleGradeUploads = async () => {
+    setGrading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/grade-uploads`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: student.id, assignment_id: assignment.id }),
+      });
+      if (res.ok) {
+        const newSubs = await res.json();
+        fetchHistory();
+        const allSubs = [...(Array.isArray(newSubs) ? newSubs : [newSubs]), ...history];
+        setSubmissionResult(buildAggregatedSubmission(assignment, allSubs, questions));
+      }
+    } catch (_) {}
+    setGrading(false);
+  };
 
   const handleFullExamComplete = (newSubmissions) => {
     fetchHistory();
     const allSubs = [...(Array.isArray(newSubmissions) ? newSubmissions : [newSubmissions]), ...history];
     setSubmissionResult(buildAggregatedSubmission(assignment, allSubs, questions));
-  };
-
-  const handleSingleQuestionComplete = (sub) => {
-    fetchHistory();
-    setSubmissionResult(sub);
   };
 
   if (submissionResult) {
@@ -63,14 +86,18 @@ export const GradingWorkspace = ({ classroom, assignment, student, questions, on
       </div>
 
       <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-bold">
-        <button type="button" onClick={() => setGradingMode('full')} className={`py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${gradingMode === 'full' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><FileText className="w-3.5 h-3.5" /><span>Chấm toàn bộ đề (1 File PDF)</span></button>
-        <button type="button" onClick={() => setGradingMode('single')} className={`py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${gradingMode === 'single' ? 'bg-white text-amber-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><CheckCircle2 className="w-3.5 h-3.5" /><span>Chấm từng câu lẻ</span></button>
+        <button type="button" onClick={() => setGradingMode('uploads')} className={`py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${gradingMode === 'uploads' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><Upload className="w-3.5 h-3.5" /><span>Chấm từ ảnh đã nộp</span></button>
+        <button type="button" onClick={() => setGradingMode('full')} className={`py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${gradingMode === 'full' ? 'bg-white text-amber-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><FileText className="w-3.5 h-3.5" /><span>Chấm toàn bộ (PDF)</span></button>
       </div>
 
-      {gradingMode === 'full' ? (
-        <FullExamGradingForm assignment={assignment} student={student} questions={questions} onGradingComplete={handleFullExamComplete} />
+      {gradingMode === 'uploads' ? (
+        <div className="space-y-4">
+          <button onClick={handleGradeUploads} disabled={grading} className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md disabled:opacity-50 cursor-pointer">
+            {grading ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Gemini đang chấm bài...</span></> : <><Sparkles className="w-4 h-4" /><span>🤖 Chấm bài học sinh này</span></>}
+          </button>
+        </div>
       ) : (
-        <SingleQuestionGradingForm assignment={assignment} student={student} questions={questions} selectedQuestion={selectedQuestion} onQuestionChange={setSelectedQuestion} onGradingComplete={handleSingleQuestionComplete} />
+        <FullExamGradingForm assignment={assignment} student={student} questions={questions} onGradingComplete={handleFullExamComplete} />
       )}
 
       {history.length > 0 && (

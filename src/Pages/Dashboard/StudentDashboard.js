@@ -4,13 +4,12 @@ import { API_BASE_URL } from '../../services/apiService';
 import StudentClassroomHeader from '../../components/Student/StudentClassroomHeader';
 import StudentAssignmentList from '../../components/Student/StudentAssignmentList';
 import StudentQuestionViewer from '../../components/Student/StudentQuestionViewer';
-import StudentGradingWorkspace from '../../components/Student/StudentGradingWorkspace';
 import Scorecard from '../../components/Dashboard/Scorecard';
 import buildAggregatedSubmission from '../../components/Dashboard/gradingAggregator';
-import { BookOpen, FileCheck, Layers, Loader2 } from 'lucide-react';
+import { BookOpen, FileCheck, Loader2 } from 'lucide-react';
 
 /**
- * Mobile-first Student Dashboard coordinating classroom data, questions, and grading scorecards.
+ * Mobile-first Student Dashboard with real-time polling and auto-refresh on tab change.
  */
 const StudentDashboard = () => {
   const { user, logout } = useAuth();
@@ -49,6 +48,14 @@ const StudentDashboard = () => {
 
   useEffect(() => { fetchClassroomAndAssignments(); fetchSubmissions(); }, [fetchClassroomAndAssignments, fetchSubmissions]);
 
+  // Real-time polling every 5s + auto-fetch on window focus
+  useEffect(() => {
+    const timer = setInterval(fetchSubmissions, 5000);
+    const onFocus = () => fetchSubmissions();
+    window.addEventListener('focus', onFocus);
+    return () => { clearInterval(timer); window.removeEventListener('focus', onFocus); };
+  }, [fetchSubmissions]);
+
   useEffect(() => {
     if (!selectedAssignment?.id) return;
     fetch(`${API_BASE_URL}/admin/assignment/${selectedAssignment.id}/questions`, { credentials: 'include' })
@@ -57,6 +64,11 @@ const StudentDashboard = () => {
       .catch(e => console.error('Questions error:', e));
   }, [selectedAssignment]);
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'scorecard') fetchSubmissions();
+  };
+
   const assignmentSubs = submissions.filter(s => s.assignment_id === selectedAssignment?.id);
   const aggregated = selectedAssignment ? buildAggregatedSubmission(selectedAssignment, assignmentSubs, questions) : null;
 
@@ -64,24 +76,19 @@ const StudentDashboard = () => {
     <div className="min-h-screen pt-5 sm:pt-20 pb-12 bg-slate-50">
       <div className="container mx-auto px-3.5 sm:px-4 max-w-4xl">
         <StudentClassroomHeader user={user} classroom={classroom} assignmentCount={assignments.length} logout={logout} />
-        
         {loading ? (
           <div className="p-12 text-center text-slate-400 flex items-center justify-center space-x-2"><Loader2 className="w-5 h-5 animate-spin text-emerald-600" /><span>Đang tải dữ liệu lớp học...</span></div>
         ) : (
           <>
             <StudentAssignmentList assignments={assignments} selectedAssignment={selectedAssignment} onSelect={setSelectedAssignment} submissions={submissions} currentQuestions={questions} />
-
             {selectedAssignment && (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-200/70 rounded-2xl text-xs font-bold shadow-2xs">
-                  <button onClick={() => setActiveTab('questions')} className={`py-2 px-1 rounded-xl flex items-center justify-center space-x-1 transition-all ${activeTab === 'questions' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600'}`}><BookOpen className="w-3.5 h-3.5" /><span>Đề Bài</span></button>
-                  <button onClick={() => setActiveTab('submit')} className={`py-2 px-1 rounded-xl flex items-center justify-center space-x-1 transition-all ${activeTab === 'submit' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600'}`}><Layers className="w-3.5 h-3.5" /><span>Nộp Bài</span></button>
-                  <button onClick={() => setActiveTab('scorecard')} className={`py-2 px-1 rounded-xl flex items-center justify-center space-x-1 transition-all ${activeTab === 'scorecard' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600'}`}><FileCheck className="w-3.5 h-3.5" /><span>Kết Quả</span></button>
+                <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/70 rounded-2xl text-xs font-bold shadow-2xs">
+                  <button onClick={() => handleTabChange('questions')} className={`py-2 px-1 rounded-xl flex items-center justify-center space-x-1 transition-all ${activeTab === 'questions' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600'}`}><BookOpen className="w-3.5 h-3.5" /><span>Đề Bài</span></button>
+                  <button onClick={() => handleTabChange('scorecard')} className={`py-2 px-1 rounded-xl flex items-center justify-center space-x-1 transition-all ${activeTab === 'scorecard' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600'}`}><FileCheck className="w-3.5 h-3.5" /><span>Kết Quả</span></button>
                 </div>
-
-                {activeTab === 'questions' && <StudentQuestionViewer questions={questions} />}
-                {activeTab === 'submit' && <StudentGradingWorkspace assignment={selectedAssignment} user={user} questions={questions} onGradingComplete={() => { fetchSubmissions(); setActiveTab('scorecard'); }} />}
-                {activeTab === 'scorecard' && (aggregated?.feedback?.questions?.length > 0 ? <Scorecard submission={aggregated} studentName={user?.email?.split('@')[0]} onClose={() => setActiveTab('questions')} /> : <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 text-xs font-medium">Bạn chưa nộp bài cho bài tập này. Hãy chọn tab "Nộp Bài" để được AI chấm điểm chi tiết nhé!</div>)}
+                {activeTab === 'questions' && <StudentQuestionViewer questions={questions} assignmentId={selectedAssignment.id} />}
+                {activeTab === 'scorecard' && (aggregated?.feedback?.questions?.length > 0 ? <Scorecard submission={aggregated} studentName={user?.email?.split('@')[0]} onClose={() => setActiveTab('questions')} /> : <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 text-xs font-medium">Giáo viên chưa chấm bài cho bạn. Hãy nộp ảnh bài làm ở tab "Đề Bài" và đợi giáo viên chấm nhé!</div>)}
               </div>
             )}
           </>

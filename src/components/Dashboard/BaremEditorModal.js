@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiService, API_BASE_URL } from '../../services/apiService';
+import MathText from '../Common/MathText';
 import { X, Sparkles, Plus, Trash2, Save, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 /**
- * Teacher modal for viewing, editing, adding/removing steps, and re-running AI barem extraction.
+ * Teacher modal for viewing, editing, and re-running AI barem extraction with MathText preview.
  */
 export const BaremEditorModal = ({ isOpen, onClose, question, onBaremUpdated }) => {
   const [steps, setSteps] = useState([]);
@@ -33,7 +34,7 @@ export const BaremEditorModal = ({ isOpen, onClose, question, onBaremUpdated }) 
       if (res.ok) {
         const data = await res.json();
         setSteps(Array.isArray(data?.steps) ? data.steps : []);
-        setMsg({ type: 'success', text: 'AI đã quét lại Barem thành công!' });
+        setMsg({ type: 'success', text: 'AI đã quét lại Barem toán học thành công!' });
         if (onBaremUpdated) onBaremUpdated();
       } else { setMsg({ type: 'error', text: 'Quét Barem thất bại' }); }
     } catch (_) { setMsg({ type: 'error', text: 'Lỗi kết nối' }); } finally { setExtracting(false); }
@@ -65,7 +66,7 @@ export const BaremEditorModal = ({ isOpen, onClose, question, onBaremUpdated }) 
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-5 shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
           <div>
             <h3 className="text-sm sm:text-base font-black text-slate-900">Barem Chuẩn — Câu {question.question_number}</h3>
@@ -76,7 +77,7 @@ export const BaremEditorModal = ({ isOpen, onClose, question, onBaremUpdated }) 
 
         {msg && <div className={`p-2.5 rounded-xl text-xs font-bold mb-3 flex items-center space-x-1.5 ${msg.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>{msg.type === 'success' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}<span>{msg.text}</span></div>}
 
-        <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {loading ? (
             <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center space-x-2"><Loader2 className="w-4 h-4 animate-spin text-amber-600" /><span>Đang tải Barem...</span></div>
           ) : steps.length === 0 ? (
@@ -85,14 +86,15 @@ export const BaremEditorModal = ({ isOpen, onClose, question, onBaremUpdated }) 
             steps.map((s, idx) => (
               <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                 <div className="flex items-center space-x-2">
-                  <input type="text" value={s.step_title || ''} onChange={(e) => updateStep(idx, 'step_title', e.target.value)} placeholder="Tên câu/ý (vd: Câu a: ...)" className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-amber-500" />
+                  <input type="text" value={s.step_title || ''} onChange={(e) => updateStep(idx, 'step_title', e.target.value)} placeholder="Tên câu/ý kèm công thức $...$" className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-amber-500" />
                   <div className="flex items-center space-x-1 shrink-0">
                     <input type="number" step="0.125" value={s.max_score || 0} onChange={(e) => updateStep(idx, 'max_score', e.target.value)} className="w-16 text-xs font-black text-amber-900 bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-center focus:outline-amber-500" />
                     <span className="text-[11px] font-bold text-slate-500">đ</span>
                   </div>
                   <button onClick={() => removeStep(idx)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
-                <input type="text" value={s.criteria || ''} onChange={(e) => updateStep(idx, 'criteria', e.target.value)} placeholder="Tiêu chuẩn chấm (yêu cầu cần đạt)..." className="w-full text-[11px] text-slate-600 bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus:outline-amber-500" />
+                {s.step_title && <div className="text-xs text-indigo-900 bg-indigo-50/70 px-2.5 py-1 rounded-lg border border-indigo-100 flex items-center space-x-1"><span className="text-[10px] font-bold text-indigo-500">Hiển thị:</span><MathText content={s.step_title} /></div>}
+                <input type="text" value={s.criteria || ''} onChange={(e) => updateStep(idx, 'criteria', e.target.value)} placeholder="Tiêu chuẩn cần đạt..." className="w-full text-[11px] text-slate-600 bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus:outline-amber-500" />
               </div>
             ))
           )}

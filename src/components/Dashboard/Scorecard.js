@@ -29,8 +29,9 @@ const groupQuestions = (rawQuestions = []) => {
 
 /**
  * Main Scorecard view displaying assessment overview and question breakdown.
+ * @param {object} props - Component properties.
  */
-export const Scorecard = ({ submission, studentName, onClose }) => {
+export const Scorecard = ({ submission, studentName, onClose, onExportPdf }) => {
   const feedback = submission.feedback || {};
   const isAggregated = !!submission.isAggregated;
   const questions = isAggregated ? (feedback.questions || []) : groupQuestions(feedback.questions || []);
@@ -51,6 +52,7 @@ export const Scorecard = ({ submission, studentName, onClose }) => {
         maxScore={formatScore(totalMax)}
         rating={rating}
         onClose={onClose}
+        onExportPdf={onExportPdf}
       />
 
       <div className="p-4 bg-white border border-slate-200 border-l-4 border-l-[#033b2e] rounded-2xl text-xs text-slate-700 shadow-sm flex items-center">

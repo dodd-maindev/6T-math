@@ -1,19 +1,32 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileDown } from 'lucide-react';
 
 /**
- * Header card component for Scorecard with 6T Math branding.
+ * Header card component for Scorecard with 6T Math branding and PDF export.
+ * @param {object} props - Component properties.
  */
-export const ScorecardHeader = ({ title, studentName, score, maxScore, rating, onClose }) => {
+export const ScorecardHeader = ({ title, studentName, score, maxScore, rating, onClose, onExportPdf }) => {
   return (
     <div className="bg-[#033b2e] p-5 sm:p-7 rounded-3xl text-white shadow-xl relative overflow-hidden">
-      <button
-        onClick={onClose}
-        className="flex items-center space-x-1.5 text-emerald-200 hover:text-white transition-colors text-xs font-semibold mb-3"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Quay lại giao diện chấm</span>
-      </button>
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={onClose}
+          className="flex items-center space-x-1.5 text-emerald-200 hover:text-white transition-colors text-xs font-semibold cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Quay lại giao diện chấm</span>
+        </button>
+        {onExportPdf && (
+          <button
+            onClick={onExportPdf}
+            className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+            title="Xuất file báo cáo theo định dạng mẫu"
+          >
+            <FileDown className="w-4 h-4" />
+            <span>Xuất PDF</span>
+          </button>
+        )}
+      </div>
 
       <div className="text-center space-y-1 pb-4 border-b border-emerald-800/60">
         <h2 className="text-base sm:text-xl font-black uppercase tracking-wider text-white">

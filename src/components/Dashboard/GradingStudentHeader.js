@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Award, FileDown } from 'lucide-react';
+import { ArrowLeft, Award, FileSpreadsheet } from 'lucide-react';
 
 /**
  * Header card for GradingWorkspace showing classroom context, student details, and action buttons.
@@ -36,11 +36,11 @@ export const GradingStudentHeader = ({ classroom, assignment, student, hasHistor
             </button>
             <button
               onClick={onExportPdf}
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-md flex items-center space-x-1.5 transition-transform hover:scale-105 cursor-pointer"
-              title="Xuất file báo cáo theo định dạng mẫu Excel/PDF"
+              className="px-3.5 py-2 bg-[#107c41] hover:bg-[#0d6535] text-white rounded-xl text-xs font-black shadow-md flex items-center space-x-1.5 transition-transform hover:scale-105 cursor-pointer"
+              title="Xuất file báo cáo theo định dạng mẫu Excel"
             >
-              <FileDown className="w-4 h-4" />
-              <span>Xuất PDF</span>
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Xuất Excel / PDF</span>
             </button>
           </div>
         )}

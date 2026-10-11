@@ -1,4 +1,5 @@
 import React from 'react';
+import MathText from '../Common/MathText';
 
 /**
  * Renders the assessment report table matching Bao_Cao_Hoc_Tap_Toan_9NC.xlsx.
@@ -40,11 +41,13 @@ export const StudentReportTable = ({ document: reportDocument, tableRef }) => {
                 <td className="border border-[#D9D9D9] p-3 text-center align-top font-bold text-slate-900">
                   {row.studentName}
                 </td>
-                <td className="border border-[#D9D9D9] p-3 text-left align-top leading-relaxed text-slate-800 whitespace-pre-line space-y-2">
+                <td className="border border-[#D9D9D9] p-3 text-left align-top leading-relaxed text-slate-800 space-y-2">
                   {row.questionReports.map((q, idx) => (
                     <div key={idx} className="mb-2 last:mb-0">
                       <span className="font-bold text-slate-900">• {q.questionTitle} {q.formatScoreText()}:</span>{' '}
-                      <span className="text-slate-700">{q.comment}</span>
+                      <span className="text-slate-700 inline">
+                        <MathText text={q.comment} />
+                      </span>
                     </div>
                   ))}
                 </td>

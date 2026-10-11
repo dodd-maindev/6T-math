@@ -1,8 +1,8 @@
 import React from 'react';
-import { ArrowLeft, FileDown } from 'lucide-react';
+import { ArrowLeft, FileSpreadsheet } from 'lucide-react';
 
 /**
- * Header card component for Scorecard with 6T Math branding and PDF export.
+ * Header card component for Scorecard with 6T Math branding and Excel / PDF export.
  * @param {object} props - Component properties.
  */
 export const ScorecardHeader = ({ title, studentName, score, maxScore, rating, onClose, onExportPdf }) => {
@@ -19,11 +19,11 @@ export const ScorecardHeader = ({ title, studentName, score, maxScore, rating, o
         {onExportPdf && (
           <button
             onClick={onExportPdf}
-            className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
-            title="Xuất file báo cáo theo định dạng mẫu"
+            className="flex items-center space-x-1.5 bg-[#107c41] hover:bg-[#0d6535] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+            title="Xuất file báo cáo theo định dạng mẫu Excel"
           >
-            <FileDown className="w-4 h-4" />
-            <span>Xuất PDF</span>
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Xuất Excel / PDF</span>
           </button>
         )}
       </div>

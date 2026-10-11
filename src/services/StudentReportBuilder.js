@@ -9,10 +9,11 @@ export class StudentReportBuilder {
    * Generates general qualitative feedback.
    * @param {number} score - Current total score.
    * @param {number} maxScore - Maximum possible score.
+   * @param {Array} [questionReports=[]] - Evaluated question summaries.
    * @returns {string} Standard evaluation text.
    */
-  static buildGeneralFeedback(score, maxScore) {
-    return StudentFeedbackEvaluator.buildGeneralFeedback(score, maxScore);
+  static buildGeneralFeedback(score, maxScore, questionReports = []) {
+    return StudentFeedbackEvaluator.buildGeneralFeedback(score, maxScore, questionReports);
   }
 
   /**
@@ -44,7 +45,7 @@ export class StudentReportBuilder {
 
     const totalScore = parseFloat(aggregatedSubmission?.score || 0);
     const totalMax = aggregatedSubmission?.totalMaxScore || 10.0;
-    const generalComment = StudentFeedbackEvaluator.buildGeneralFeedback(totalScore, totalMax);
+    const generalComment = StudentFeedbackEvaluator.buildGeneralFeedback(totalScore, totalMax, questionReports);
 
     return new StudentRowReport(indexNumber, studentName, questionReports, totalScore, totalMax, generalComment);
   }

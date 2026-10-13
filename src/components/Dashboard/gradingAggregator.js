@@ -17,21 +17,24 @@ const formatSteps = (rawQuestions = []) => {
 };
 
 const buildCard = (sub, oq) => {
-  const rawQs = sub.feedback?.questions || [];
+  const rawQs = sub.feedback?.questions || (sub.feedback?.steps ? [sub.feedback] : []);
   const { steps, comment } = formatSteps(rawQs);
   const stepSum = steps.reduce((sum, s) => sum + (parseFloat(s.allocated_score) || 0), 0);
-  const allocated = steps.length > 0 ? stepSum : rawQs.reduce((s, q) => s + (parseFloat(q.allocated_score) || 0), 0);
+  const subScore = parseFloat(sub.score || sub.feedback?.allocated_score || sub.feedback?.score || 0);
+  const allocated = steps.length > 0 ? stepSum : (rawQs.length > 0 ? rawQs.reduce((s, q) => s + (parseFloat(q.allocated_score) || 0), 0) : subScore);
   const maxScore = oq.max_score || rawQs.reduce((s, q) => s + (parseFloat(q.max_score) || 0), 0);
+  const finalComment = comment || sub.feedback?.teacher_comment || '';
   return {
     question_title: `Bài ${oq.question_number}`, allocated_score: allocated,
-    max_score: maxScore, steps, teacher_comment: comment,
+    max_score: maxScore, steps, teacher_comment: finalComment,
     imageUrls: Array.isArray(sub.feedback?.student_image_urls) ? sub.feedback.student_image_urls : [],
   };
 };
 
 const getSubmissionTitleNumbers = (sub) => {
   const nums = new Set();
-  for (const q of (sub.feedback?.questions || [])) {
+  const rawQs = sub.feedback?.questions || (sub.feedback?.steps ? [sub.feedback] : []);
+  for (const q of rawQs) {
     const n = extractQuestionNumber(q.question_title);
     if (n != null) nums.add(n);
   }

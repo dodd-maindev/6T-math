@@ -1,12 +1,12 @@
 import React from 'react';
-import { School, Sparkles, GraduationCap, BookOpen, Plus, LogOut, ChevronDown } from 'lucide-react';
+import { School, Sparkles, GraduationCap, BookOpen, Plus, Trash2, LogOut, ChevronDown } from 'lucide-react';
 
 /**
  * Responsive top navigation bar adapting to mobile and desktop screen sizes.
  */
 export const AppTopNav = ({
   classrooms = [], selectedClassroom, onSelectClassroom, onOpenCreateClassroom,
-  currentTab, onTabChange, user, logout
+  onDeleteClassroom, currentTab, onTabChange, user, logout
 }) => {
   return (
     <header className="w-full bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-center justify-between shrink-0 shadow-sm z-30 gap-2 sm:gap-4">
@@ -35,6 +35,11 @@ export const AppTopNav = ({
           <button onClick={onOpenCreateClassroom} title="Tạo thêm lớp" className="p-1.5 rounded-lg bg-slate-50 hover:bg-amber-50 border border-slate-300 text-slate-600 shadow-sm">
             <Plus className="w-3.5 h-3.5" />
           </button>
+          {selectedClassroom && (
+            <button onClick={() => onDeleteClassroom(selectedClassroom)} title="Xóa lớp này" className="p-1.5 rounded-lg bg-slate-50 hover:bg-rose-50 border border-slate-300 text-slate-600 hover:text-rose-600 shadow-sm transition-colors">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <button onClick={logout} title="Đăng xuất" className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:text-rose-600 shadow-sm sm:hidden">

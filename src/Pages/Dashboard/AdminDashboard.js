@@ -9,7 +9,7 @@ import GradingTab from '../../components/Dashboard/GradingTab';
 import { School, Plus, Loader2 } from 'lucide-react';
 
 /**
- * Main dashboard container with smooth loading state and responsive layout.
+ * Main dashboard container with responsive layout, tab navigation, and classroom management.
  */
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -26,10 +26,7 @@ const AdminDashboard = () => {
       const list = Array.isArray(data) ? data : [];
       setClassrooms(list);
       if (list.length > 0) {
-        setSelectedClassroom((prev) => {
-          if (prev && list.some((c) => c.id === prev.id)) return prev;
-          return list[0];
-        });
+        setSelectedClassroom((prev) => (prev && list.some((c) => c.id === prev.id) ? prev : list[0]));
       }
     } catch (_) {
       setClassrooms([]);
@@ -44,23 +41,28 @@ const AdminDashboard = () => {
     setSelectedClassroom(newClassroom);
   }, []);
 
-  useEffect(() => {
-    fetchClassrooms();
-  }, [fetchClassrooms]);
+  const handleDeleteClassroom = async (cls) => {
+    if (!cls || !window.confirm(`Bạn có chắc chắn muốn xóa lớp "${cls.name}"? Dữ liệu của lớp sẽ bị xóa.`)) return;
+    try {
+      await apiService.delete(`/admin/classroom/${cls.id}`);
+      const updated = classrooms.filter((c) => c.id !== cls.id);
+      setClassrooms(updated);
+      setSelectedClassroom(updated.length > 0 ? updated[0] : null);
+    } catch (err) {
+      alert('Không thể xóa lớp: ' + (err.message || 'Lỗi hệ thống'));
+    }
+  };
+
+  useEffect(() => { fetchClassrooms(); }, [fetchClassrooms]);
 
   return (
     <div className="w-full min-h-screen sm:h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
       <AppTopNav
-        classrooms={classrooms}
-        selectedClassroom={selectedClassroom}
-        onSelectClassroom={setSelectedClassroom}
-        onOpenCreateClassroom={() => setIsClassroomModalOpen(true)}
-        currentTab={currentTab}
-        onTabChange={setCurrentTab}
-        user={user}
-        logout={logout}
+        classrooms={classrooms} selectedClassroom={selectedClassroom}
+        onSelectClassroom={setSelectedClassroom} onOpenCreateClassroom={() => setIsClassroomModalOpen(true)}
+        onDeleteClassroom={handleDeleteClassroom} currentTab={currentTab} onTabChange={setCurrentTab}
+        user={user} logout={logout}
       />
-
       <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto p-3 sm:p-6 overflow-y-auto">
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center space-y-3 py-16 text-slate-400">
@@ -75,29 +77,15 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-500 space-y-4 py-12">
-            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-600 shadow-sm">
-              <School className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <div className="text-center px-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-800">Chào mừng đến với CLB 6T MATH</h2>
-              <p className="text-xs text-slate-500 mt-1">Chưa có lớp học nào được chọn. Hãy tạo lớp học đầu tiên để bắt đầu.</p>
-            </div>
-            <button
-              onClick={() => setIsClassroomModalOpen(true)}
-              className="px-4 sm:px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tạo Lớp Học Đầu Tiên</span>
+            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-600 shadow-sm"><School className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <div className="text-center px-4"><h2 className="text-sm sm:text-base font-bold text-slate-800">Chào mừng đến với CLB 6T MATH</h2><p className="text-xs text-slate-500 mt-1">Chưa có lớp học nào được chọn. Hãy tạo lớp học đầu tiên để bắt đầu.</p></div>
+            <button onClick={() => setIsClassroomModalOpen(true)} className="px-4 sm:px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center space-x-1.5 cursor-pointer">
+              <Plus className="w-4 h-4" /><span>Tạo Lớp Học Đầu Tiên</span>
             </button>
           </div>
         )}
       </main>
-
-      <ClassroomModal
-        isOpen={isClassroomModalOpen}
-        onClose={() => setIsClassroomModalOpen(false)}
-        onClassroomCreated={handleClassroomCreated}
-      />
+      <ClassroomModal isOpen={isClassroomModalOpen} onClose={() => setIsClassroomModalOpen(false)} onClassroomCreated={handleClassroomCreated} />
     </div>
   );
 };

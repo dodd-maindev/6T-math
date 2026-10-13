@@ -88,14 +88,13 @@ export const QuestionCard = ({ question }) => {
           ))}
         </div>
       </div>
-
       {question.teacher_comment && (
-        <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-400 italic">
-          * <MathText content={question.teacher_comment} />
+        <div className="mt-3 p-3 rounded-xl bg-[#f0fdf4] border border-emerald-200 text-xs text-slate-800 leading-relaxed">
+          <span className="font-bold text-[#024c3d] mr-1.5">Nhận xét chi tiết:</span>
+          <MathText content={question.teacher_comment} />
         </div>
       )}
     </div>
   );
 };
-
 export default QuestionCard;
